@@ -43,6 +43,18 @@
   --edge: clamp(20px, 5vw, 64px);
 }
 
+/* Partners marquee seamless scroll (now driven by JS scrollLeft, same as Featured Work) */
+#partnersMarqueeTrack {
+  width: max-content;
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+#partnersMarqueeMask{ cursor:grab; }
+#partnersMarqueeMask.dragging{ cursor:grabbing; }
+#partnersMarqueeMask::-webkit-scrollbar{ display:none; }
+
 *{box-sizing:border-box; margin:0; padding:0;}
 html{background:var(--bg); -webkit-font-smoothing:antialiased;}
 body{
@@ -170,6 +182,10 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; line-height:1.05; letter-spa
 
 .industry-tile, .bento-card, .work-card, .price-card{ opacity:0; transform:translateY(28px); }
 
+#workGrid::-webkit-scrollbar{ display:none; }
+#workGrid.dragging{ cursor:grabbing; }
+.work-card{ flex:0 0 clamp(240px, 27vw, 340px); }
+
 ::-webkit-scrollbar{width:10px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--line); border-radius:5px;}
@@ -191,7 +207,6 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; line-height:1.05; letter-spa
     gap:8px !important;
   }
   .process-step h3{ font-size:20px !important; }
-  #workGrid{ grid-template-columns:repeat(2,1fr) !important; }
 }
 
 @media (max-width: 640px){
@@ -204,7 +219,7 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; line-height:1.05; letter-spa
   /* shorter rows on small phones — still 2 columns × 5 rows, just more
      compact so the section isn't excessively tall on a narrow screen */
   #bentoGrid{ grid-auto-rows:170px !important; gap:10px !important; }
-  #workGrid{ grid-template-columns:1fr !important; }
+  .work-card{ flex:0 0 clamp(200px, 70vw, 280px); }
   #heroTrust{ gap:14px !important; }
   .price-card{ padding:28px 22px !important; }
   #contact form{ padding:26px !important; }
@@ -460,8 +475,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p style="color:var(--ink-dim); font-size:14px; max-width:280px;">A sample of the kind of sites we design — built fresh for each business, never copy-pasted.</p>
     </div>
 
-    <div id="workGrid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px;">
-      <!-- injected by JS -->
+    <div id="workGrid" style="overflow-x:hidden; overflow-y:visible; cursor:grab; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
+      <div id="workTrack" style="display:flex; gap:24px; width:max-content;">
+        <!-- injected by JS (duplicated for seamless loop) -->
+      </div>
     </div>
   </div>
 </section>
@@ -616,7 +633,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <!-- same gradient-mask technique as the tools marquee above, so the
        cards fade out at both edges instead of cutting off abruptly -->
-  <div class="marquee-mask" style="position:relative; overflow:hidden; mask-image:linear-gradient(90deg, transparent, black 12%, black 88%, transparent); -webkit-mask-image:linear-gradient(90deg, transparent, black 12%, black 88%, transparent);">
+  <div class="marquee-mask" id="partnersMarqueeMask" style="position:relative; overflow-x:hidden; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; mask-image:linear-gradient(90deg, transparent, black 12%, black 88%, transparent); -webkit-mask-image:linear-gradient(90deg, transparent, black 12%, black 88%, transparent);">
     <div id="partnersMarqueeTrack" style="display:flex; gap:20px; width:max-content; align-items:stretch;">
       <!-- injected by JS from the PARTNERS_CONFIG array below -->
     </div>
@@ -879,16 +896,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 // Each key points to a URL; you can replace the picsum URLs with your own.
 const IMAGE_CONFIG = {
   industries: {
-    gyms: 'https://picsum.photos/seed/ryw-gyms/640/640',
-    restaurants: 'https://picsum.photos/seed/ryw-restaurants/640/640',
+    gyms: 'images/what/Gym.png',
+    restaurants: 'images/what/Restro.png',
     clothing: 'https://picsum.photos/seed/ryw-clothing/640/640',
-    coaching: 'https://picsum.photos/seed/ryw-coaching/640/640',
-    karate: 'https://picsum.photos/seed/ryw-karate/640/640',
+    coaching: 'images/School.png',
+    karate: 'images/Karate.png',
     salons: 'https://picsum.photos/seed/ryw-salons/640/640',
-    clinics: 'https://picsum.photos/seed/ryw-clinics/640/640',
+    clinics: 'images/what/Pharmacy.png',
     startups: 'https://picsum.photos/seed/ryw-startups/640/640',
     travel: 'https://picsum.photos/seed/ryw-travel/640/640',
-    mobileStores: 'https://picsum.photos/seed/ryw-mobile-stores/640/640'
+    mobileStores: 'images/Mobile.png'
   },
   services: {
     businessWebsites: 'https://picsum.photos/seed/ryw-svc-business-websites/640/480',
@@ -903,12 +920,12 @@ const IMAGE_CONFIG = {
     websiteMaintenance: 'https://picsum.photos/seed/ryw-svc-website-maintenance/640/480'
   },
   work: {
-    ironcore: 'https://picsum.photos/seed/ryw-work-ironcore/800/1000',
-    tablefourteen: 'https://picsum.photos/seed/ryw-work-tablefourteen/800/1000',
+    ironcore: 'images/what/Gym.png',
+    tablefourteen: 'images/what/Restro.png',
     norquest: 'https://picsum.photos/seed/ryw-work-norquest/800/1000',
     flowstack: 'https://picsum.photos/seed/ryw-work-flowstack/800/1000',
-    apexprep: 'https://picsum.photos/seed/ryw-work-apexprep/800/1000',
-    wellpoint: 'https://picsum.photos/seed/ryw-work-wellpoint/800/1000'
+    apexprep: 'images/School.png',
+    wellpoint: 'images/what/Pharmacy.png'
   },
   partners: {
     norquest: 'https://picsum.photos/seed/ryw-partner-norquest/640/480'
@@ -1317,8 +1334,9 @@ const work = [
 ];
 
 const workGrid = document.getElementById('workGrid');
+const workTrack = document.getElementById('workTrack');
 
-work.forEach(w => {
+function makeWorkCard(w) {
   const card = document.createElement('div');
   card.className = 'work-card';
   card.dataset.image = w.image;
@@ -1341,8 +1359,83 @@ work.forEach(w => {
     card.querySelector('.work-bg').style.transform = 'scale(1)';
     const r = card.querySelector('.work-result'); r.style.maxHeight='0'; r.style.opacity='0';
   });
-  workGrid.appendChild(card);
-});
+  return card;
+}
+
+// Render the set twice back-to-back so the track can loop seamlessly (like the partners marquee).
+work.concat(work).forEach(w => workTrack.appendChild(makeWorkCard(w)));
+
+/* =================== WORK TRACK: auto-scroll + drag-to-scroll combo =================== */
+(function() {
+  let autoScrollOn = true;
+  let isDragging = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+  let halfWidth = 0;
+  const SPEED = 0.6; // px per frame
+
+  function measure() {
+    halfWidth = workTrack.scrollWidth / 2; // width of ONE set of cards
+  }
+  window.addEventListener('load', measure);
+  window.addEventListener('resize', measure);
+  measure();
+
+  function tick() {
+    if (autoScrollOn && !isDragging && halfWidth > 0) {
+      workGrid.scrollLeft += SPEED;
+      if (workGrid.scrollLeft >= halfWidth) {
+        workGrid.scrollLeft -= halfWidth; // seamless jump back, no gap
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Pause auto-scroll while the pointer is over the track; resume on leave.
+  workGrid.addEventListener('mouseenter', () => { autoScrollOn = false; });
+  workGrid.addEventListener('mouseleave', () => { autoScrollOn = true; isDragging = false; workGrid.classList.remove('dragging'); });
+
+  // Manual drag-to-scroll.
+  workGrid.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    workGrid.classList.add('dragging');
+    startX = e.pageX;
+    startScrollLeft = workGrid.scrollLeft;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging || halfWidth <= 0) return;
+    e.preventDefault();
+    let next = startScrollLeft - (e.pageX - startX);
+    // wrap seamlessly in both directions so it always feels continuous
+    while (next < 0) next += halfWidth;
+    while (next >= halfWidth) next -= halfWidth;
+    workGrid.scrollLeft = next;
+  });
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    workGrid.classList.remove('dragging');
+  });
+
+  // Touch drag (manual, since overflow-x:hidden doesn't respond to native touch scroll)
+  workGrid.addEventListener('touchstart', (e) => {
+    autoScrollOn = false;
+    isDragging = true;
+    startX = e.touches[0].pageX;
+    startScrollLeft = workGrid.scrollLeft;
+  }, { passive: true });
+  workGrid.addEventListener('touchmove', (e) => {
+    if (!isDragging || halfWidth <= 0) return;
+    let next = startScrollLeft - (e.touches[0].pageX - startX);
+    while (next < 0) next += halfWidth;
+    while (next >= halfWidth) next -= halfWidth;
+    workGrid.scrollLeft = next;
+  }, { passive: true });
+  workGrid.addEventListener('touchend', () => {
+    isDragging = false;
+    autoScrollOn = true;
+  }, { passive: true });
+})();
 
 /* =================== PRICING (built from PRICING_CONFIG) =================== */
 function renderPricingCards() {
@@ -1428,14 +1521,18 @@ const PARTNERS_CONFIG = [
 
 function buildPartnersMarquee() {
   const track = document.getElementById('partnersMarqueeTrack');
-  if (!track || !PARTNERS_CONFIG.length) return;
+  const mask = document.getElementById('partnersMarqueeMask');
+  if (!track || !mask || !PARTNERS_CONFIG.length) return;
+
+  const CARD_WIDTH = 220;
+  const GAP = 20;
+  const SINGLE_SET_WIDTH = PARTNERS_CONFIG.length * (CARD_WIDTH + GAP);
 
   function buildPartnerCard(partner) {
     const card = document.createElement('a');
     card.href = partner.url;
     card.target = '_blank';
     card.rel = 'noopener noreferrer';
-    card.dataset.image = partner.image;
     card.style.cssText = `
       position:relative; flex-shrink:0; width:220px; overflow:hidden;
       border:1px solid var(--line); border-radius:16px; background:var(--panel);
@@ -1452,6 +1549,9 @@ function buildPartnersMarquee() {
       </div>
     `;
     const img = card.querySelector('img');
+    img.draggable = false;
+    card.addEventListener('dragstart', e => e.preventDefault());
+    card.addEventListener('click', (e) => { if (card.dataset.dragged === '1') e.preventDefault(); });
     card.addEventListener('mouseenter', () => {
       card.style.borderColor = 'var(--brass)';
       card.style.transform = 'translateY(-4px)';
@@ -1465,17 +1565,85 @@ function buildPartnersMarquee() {
     return card;
   }
 
-  [...PARTNERS_CONFIG, ...PARTNERS_CONFIG].forEach(partner => {
-    track.appendChild(buildPartnerCard(partner));
+  let period = 0; // width of exactly one full set of cards, for seamless wrap-around
+
+  // (Re)build the track with enough duplicated sets so it always overflows
+  // the mask — the mask is full-bleed (outside .wrap), so on wide monitors
+  // 2 sets alone weren't always wider than the screen, which is why
+  // auto-scroll had nothing to scroll and looked stuck.
+  function renderTrack() {
+    const neededWidth = (mask.clientWidth * 2) + SINGLE_SET_WIDTH;
+    const copies = Math.max(4, Math.ceil(neededWidth / SINGLE_SET_WIDTH));
+    track.innerHTML = '';
+    for (let i = 0; i < copies; i++) {
+      PARTNERS_CONFIG.forEach(partner => track.appendChild(buildPartnerCard(partner)));
+    }
+    period = track.scrollWidth / copies;
+    mask.scrollLeft = 0;
+  }
+  renderTrack();
+
+  // Auto-scroll + drag-to-scroll combo (same mechanism as Featured Work section).
+  let autoScrollOn = true;
+  let isDragging = false;
+  let dragMoved = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+  const SPEED = 0.5; // px per frame
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderTrack, 200);
   });
 
-  const scrollTween = gsap.to(track, {
-    x: () => -(track.scrollWidth / 2),
-    duration: 34, ease: 'none', repeat: -1
+  function tickPartners() {
+    if (autoScrollOn && !isDragging && period > 0) {
+      mask.scrollLeft += SPEED;
+      while (mask.scrollLeft >= period) mask.scrollLeft -= period; // seamless jump back, no gap
+    }
+    requestAnimationFrame(tickPartners);
+  }
+  requestAnimationFrame(tickPartners);
+
+  mask.addEventListener('mouseenter', () => { autoScrollOn = false; });
+  mask.addEventListener('mouseleave', () => {
+    autoScrollOn = true; isDragging = false; mask.classList.remove('dragging');
   });
-  track.addEventListener('mouseenter', () => scrollTween.pause());
-  track.addEventListener('mouseleave', () => scrollTween.resume());
+
+  function startDrag(x) {
+    isDragging = true; dragMoved = false;
+    mask.classList.add('dragging');
+    startX = x;
+    startScrollLeft = mask.scrollLeft;
+  }
+  function moveDrag(x) {
+    if (!isDragging || period <= 0) return;
+    if (Math.abs(x - startX) > 4) dragMoved = true;
+    let next = startScrollLeft - (x - startX);
+    while (next < 0) next += period;
+    while (next >= period) next -= period;
+    mask.scrollLeft = next;
+  }
+  function endDrag() {
+    isDragging = false;
+    mask.classList.remove('dragging');
+    if (dragMoved) {
+      track.querySelectorAll('a').forEach(a => { a.dataset.dragged = '1'; });
+      setTimeout(() => track.querySelectorAll('a').forEach(a => { a.dataset.dragged = '0'; }), 50);
+    }
+  }
+
+  mask.addEventListener('mousedown', (e) => startDrag(e.pageX));
+  window.addEventListener('mousemove', (e) => moveDrag(e.pageX));
+  window.addEventListener('mouseup', endDrag);
+
+  // Touch drag (manual, since overflow-x:hidden doesn't respond to native touch scroll)
+  mask.addEventListener('touchstart', (e) => { autoScrollOn = false; startDrag(e.touches[0].pageX); }, { passive: true });
+  mask.addEventListener('touchmove', (e) => moveDrag(e.touches[0].pageX), { passive: true });
+  mask.addEventListener('touchend', () => { endDrag(); autoScrollOn = true; }, { passive: true });
 }
+
 buildPartnersMarquee();
 
 /* =================== PROCESS TIMELINE FILL =================== */
@@ -1505,7 +1673,7 @@ document.querySelectorAll('.reveal-up').forEach(el => {
     once: true
   });
 });
-['#industryGrid > div', '#bentoGrid > div', '#workGrid > div', '#pricingGrid > div'].forEach(sel => {
+['#industryGrid > div', '#bentoGrid > div', '#workTrack > div', '#pricingGrid > div'].forEach(sel => {
   ScrollTrigger.create({
     trigger: sel.split(' >')[0], start: 'top 85%', once: true,
     onEnter: () => gsap.to(sel, { opacity: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power3.out' })
@@ -2224,4 +2392,4 @@ document.addEventListener('submit', (e) => {
 }, { capture: true });
 </script>
 </body>
-</html>    
+</html>
