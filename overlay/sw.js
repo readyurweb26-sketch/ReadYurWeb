@@ -25,11 +25,10 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 </html>`;
 
 // List of resources to cache during installation.
-// These are same‑origin or CORS‑enabled (CDNs, picsum, Google Fonts).
 const PRECACHE_URLS = [
-  '/',                          // main page (index.html)
-  '/privacy.html',              // privacy policy page (if it exists)
-  '/manifest.json',             // so install works offline
+  '/overlay/ReadYurWeb.html',          // main page (overlay folder)
+  '/overlay/privacy.html',             // privacy policy page
+  '/overlay/manifest.json',            // manifest
   // Google Fonts CSS (the exact link used in your HTML)
   'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
   // GSAP & Lenis from CDNs
@@ -70,13 +69,6 @@ const PRECACHE_URLS = [
 ];
 
 // Install event: cache all static resources.
-// NOTE: cache.addAll() is atomic — if even ONE request in the list fails
-// (a picsum image timing out, a CORS-blocked font, a 404 on a path that
-// doesn't exist on this deployment), the ENTIRE install rejects and NONE
-// of the resources get cached. That's what was throwing
-// "Failed to execute 'addAll' on 'Cache': Request failed" in the console.
-// Caching each URL independently means one bad resource just gets skipped
-// (and logged) instead of taking down offline support for everything else.
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
@@ -176,13 +168,6 @@ self.addEventListener('fetch', event => {
   }
 
   // For everything else (API calls, etc.), just go to the network.
-  // Wrapped in .catch() so a dropped connection (e.g. the kill-switch's
-  // /site-status.json check, or any other same-origin API call) fails
-  // gracefully with a proper Response instead of an unhandled promise
-  // rejection / "Failed to fetch" error inside the service worker. The
-  // page-side code (window.__rywSiteActive, form handlers, etc.) already
-  // has its own try/catch and AbortController timeout, so this simply
-  // stops the failure from surfacing as a service-worker-level error.
   event.respondWith(
     fetch(request).catch(err => {
       console.warn('[sw] network fetch failed, passing through error response:', request.url, err && err.message);

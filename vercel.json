@@ -1,6 +1,11 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/ReadYurWeb.html" }
+    { "source": "/", "destination": "/overlay/ReadYurWeb.html" },
+    { "source": "/privacy.html", "destination": "/overlay/privacy.html" },
+    { "source": "/manifest.json", "destination": "/overlay/manifest.json" },
+    { "source": "/sw.js", "destination": "/overlay/sw.js" },
+    { "source": "/script.js", "destination": "/overlay/script.js" },
+    { "source": "/styles.css", "destination": "/overlay/styles.css" }
   ],
   "headers": [
     {
