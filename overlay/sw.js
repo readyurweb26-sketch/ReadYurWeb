@@ -1,5 +1,5 @@
 // Service Worker for ReadYurWeb – P3 Offline & PWA support
-const CACHE_NAME = 'ryw-v1';
+const CACHE_NAME = 'ryw-v2';
 
 // Offline fallback HTML (shown when a navigation request fails)
 const OFFLINE_HTML = `<!DOCTYPE html>
@@ -19,7 +19,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <body>
   <div class="container">
     <div class="logo"><span></span>ReadYurWeb</div>
-    <p>You’re offline. Please check your connection.</p>
+    <p>You're offline. Please check your connection.</p>
   </div>
 </body>
 </html>`;
@@ -70,11 +70,29 @@ const PRECACHE_URLS = [
 ];
 
 // Install event: cache all static resources.
+// NOTE: cache.addAll() is atomic — if even ONE request in the list fails
+// (a picsum image timing out, a CORS-blocked font, a 404 on a path that
+// doesn't exist on this deployment), the ENTIRE install rejects and NONE
+// of the resources get cached. That's what was throwing
+// "Failed to execute 'addAll' on 'Cache': Request failed" in the console.
+// Caching each URL independently means one bad resource just gets skipped
+// (and logged) instead of taking down offline support for everything else.
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(
+        PRECACHE_URLS.map(url =>
+          fetch(url, { mode: url.startsWith(self.location.origin) || url.startsWith('/') ? 'same-origin' : 'cors' })
+            .then(response => {
+              if (response && (response.ok || response.type === 'opaque')) {
+                return cache.put(url, response);
+              }
+              console.warn('[sw] skipped precache (bad response):', url);
+            })
+            .catch(err => console.warn('[sw] skipped precache (fetch failed):', url, err.message))
+        )
+      )
+    ).then(() => self.skipWaiting())
   );
 });
 
@@ -158,5 +176,21 @@ self.addEventListener('fetch', event => {
   }
 
   // For everything else (API calls, etc.), just go to the network.
-  event.respondWith(fetch(request));
+  // Wrapped in .catch() so a dropped connection (e.g. the kill-switch's
+  // /site-status.json check, or any other same-origin API call) fails
+  // gracefully with a proper Response instead of an unhandled promise
+  // rejection / "Failed to fetch" error inside the service worker. The
+  // page-side code (window.__rywSiteActive, form handlers, etc.) already
+  // has its own try/catch and AbortController timeout, so this simply
+  // stops the failure from surfacing as a service-worker-level error.
+  event.respondWith(
+    fetch(request).catch(err => {
+      console.warn('[sw] network fetch failed, passing through error response:', request.url, err && err.message);
+      return new Response(JSON.stringify({ error: 'network_unavailable' }), {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    })
+  );
 });
