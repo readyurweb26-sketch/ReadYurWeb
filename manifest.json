@@ -1,7 +1,7 @@
 {
   "name": "ReadYurWeb",
   "short_name": "RYW",
-  "start_url": "/",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#08090B",
   "theme_color": "#C9A668",

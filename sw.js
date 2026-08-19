@@ -26,7 +26,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 
 // List of resources to cache during installation.
 const PRECACHE_URLS = [
-  '/ReadYurWeb.html',          // main page (overlay folder)
+  '/index.html',          // main page (overlay folder)
   '/privacy.html',             // privacy policy page
   '/manifest.json',            // manifest
   // Google Fonts CSS (the exact link used in your HTML)
@@ -116,6 +116,11 @@ function isStaticAsset(url) {
 self.addEventListener('fetch', event => {
   const { request } = event;
 
+    if (request.url.endsWith('.map')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+  
   // Don't intercept non‑GET requests.
   if (request.method !== 'GET') return;
 
