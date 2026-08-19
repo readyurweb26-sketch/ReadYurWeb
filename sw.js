@@ -26,9 +26,9 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 
 // List of resources to cache during installation.
 const PRECACHE_URLS = [
-  '/overlay/ReadYurWeb.html',          // main page (overlay folder)
-  '/overlay/privacy.html',             // privacy policy page
-  '/overlay/manifest.json',            // manifest
+  '/ReadYurWeb.html',          // main page (overlay folder)
+  '/privacy.html',             // privacy policy page
+  '/manifest.json',            // manifest
   // Google Fonts CSS (the exact link used in your HTML)
   'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
   // GSAP & Lenis from CDNs

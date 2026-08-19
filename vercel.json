@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/overlay/ReadYurWeb.html"}
+    { "source": "/", "destination": "/ReadYurWeb.html"}
   ],
   "headers": [
     {
