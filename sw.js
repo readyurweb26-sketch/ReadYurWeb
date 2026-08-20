@@ -1,5 +1,5 @@
 // Service Worker for ReadYurWeb – P3 Offline & PWA support
-const CACHE_NAME = 'ryw-v2';
+const CACHE_NAME = 'ryw-v3';
 
 // Offline fallback HTML (shown when a navigation request fails)
 const OFFLINE_HTML = `<!DOCTYPE html>
@@ -35,37 +35,6 @@ const PRECACHE_URLS = [
   'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js',
   'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js',
-  // Industry tile photos (10 images)
-  'https://picsum.photos/seed/ryw-gyms/640/640',
-  'https://picsum.photos/seed/ryw-restaurants/640/640',
-  'https://picsum.photos/seed/ryw-clothing/640/640',
-  'https://picsum.photos/seed/ryw-coaching/640/640',
-  'https://picsum.photos/seed/ryw-karate/640/640',
-  'https://picsum.photos/seed/ryw-salons/640/640',
-  'https://picsum.photos/seed/ryw-clinics/640/640',
-  'https://picsum.photos/seed/ryw-startups/640/640',
-  'https://picsum.photos/seed/ryw-travel/640/640',
-  'https://picsum.photos/seed/ryw-mobile-stores/640/640',
-  // Bento card background photos (10 images)
-  'https://picsum.photos/seed/ryw-svc-business-websites/640/480',
-  'https://picsum.photos/seed/ryw-svc-landing-pages/640/480',
-  'https://picsum.photos/seed/ryw-svc-booking-systems/640/480',
-  'https://picsum.photos/seed/ryw-svc-membership-systems/640/480',
-  'https://picsum.photos/seed/ryw-svc-billing-systems/640/480',
-  'https://picsum.photos/seed/ryw-svc-admin-dashboards/640/480',
-  'https://picsum.photos/seed/ryw-svc-ecommerce-stores/640/480',
-  'https://picsum.photos/seed/ryw-svc-whatsapp-integration/640/480',
-  'https://picsum.photos/seed/ryw-svc-seo-setup/640/480',
-  'https://picsum.photos/seed/ryw-svc-website-maintenance/640/480',
-  // Work card images (6 images)
-  'https://picsum.photos/seed/ryw-work-ironcore/800/1000',
-  'https://picsum.photos/seed/ryw-work-tablefourteen/800/1000',
-  'https://picsum.photos/seed/ryw-work-norquest/800/1000',
-  'https://picsum.photos/seed/ryw-work-flowstack/800/1000',
-  'https://picsum.photos/seed/ryw-work-apexprep/800/1000',
-  'https://picsum.photos/seed/ryw-work-wellpoint/800/1000',
-  // Partner image
-  'https://picsum.photos/seed/ryw-partner-norquest/640/480'
 ];
 
 // Install event: cache all static resources.
@@ -107,7 +76,6 @@ function isNavigation(request) {
 function isStaticAsset(url) {
   return url.startsWith('https://cdnjs.cloudflare.com') ||
          url.startsWith('https://unpkg.com') ||
-         url.startsWith('https://picsum.photos') ||
          url.startsWith('https://fonts.googleapis.com') ||
          url.startsWith('https://fonts.gstatic.com');
 }
