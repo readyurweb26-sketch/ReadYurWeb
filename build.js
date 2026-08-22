@@ -40,13 +40,34 @@ async function build() {
   rimraf(DIST);
   fs.mkdirSync(DIST, { recursive: true });
 
-  // 1. Minify JS
+  // The real Apps Script URL is never committed to source — it's read
+  // from a Vercel Environment Variable at build time and substituted
+  // into the __GOOGLE_SHEET_URL__ placeholder inside script.js.
+  // Set it in: Vercel Project → Settings → Environment Variables →
+  //   Name:  GOOGLE_SHEET_URL
+  //   Value: https://script.google.com/macros/s/XXXXX/exec
+  const googleSheetUrl = process.env.GOOGLE_SHEET_URL;
+  if (!googleSheetUrl) {
+    console.error(
+      "Build failed: GOOGLE_SHEET_URL environment variable is not set.\n" +
+      "Set it in Vercel → Project Settings → Environment Variables (and in your local .env for `vercel dev`)."
+    );
+    process.exit(1);
+  }
+
+  // 1. Minify JS (and inject the Google Sheet URL in place of the
+  //    __GOOGLE_SHEET_URL__ placeholder — this is a plain text/AST
+  //    substitution done by esbuild, so the source file itself never
+  //    contains the real URL).
   const jsResult = await esbuild.build({
     entryPoints: [path.join(ROOT, "script.js")],
     bundle: false,
     minify: true,
     write: false,
     target: ["es2018"],
+    define: {
+      __GOOGLE_SHEET_URL__: JSON.stringify(googleSheetUrl),
+    },
   });
   const jsContent = jsResult.outputFiles[0].contents;
   const jsHash = hashOf(jsContent);
